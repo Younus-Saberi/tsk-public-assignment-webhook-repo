@@ -53,7 +53,7 @@ def create_app():
         #Format: {author} pushed to {to_branch} on {timestamp}
         #Sample: "Travis" pushed to "staging" on 1st April 2021 - 9:30 PM UTC
         msg = f'{obj.pull_request.user.login} pushed to {obj.pull_request.head.repo.default_branch} on {formatted_dt}'
-        mongo.db.demo.insert_one({'message':msg})
+        mongo.db.demo.insert_one({'action':'pull_request','message':msg})
 
         return jsonify({'message': 'Info added successfully'}), 201
 
