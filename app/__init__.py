@@ -29,7 +29,23 @@ def create_app():
         print(mongo)
         return "<h1>Hello World</h1>",200
 
-    @app.route('/push', methods=['POST'])
+    #Register the Push action into DB
+    #For PUSH action:
+    #Format: {author} pushed to {to_branch} on {timestamp}
+    #Sample: "Travis" pushed to "staging" on 1st April 2021 - 9:30 PM UTC
+    @app.route('/push',methods=['POST'])
+    def add_push():
+        data = request.get_json()
+        obj = Box(data)
+        # obj.pusher.name pushed to obj.repository.default_branch
+        mongo.db.demo.insert_one({'action':'push','message':obj})
+
+        print("YOUR PUSH ACTION DATA IS", obj)
+
+        return jsonify({'message':"push action recorded"}),201
+
+    # Register the Pull Request action into DB
+    @app.route('/pull-request', methods=['POST'])
     def add_user():
         data = request.get_json()
         obj = Box(data)
@@ -49,14 +65,14 @@ def create_app():
         #Formating Date in UTC
         dt = datetime.strptime(obj.pull_request.created_at,'%Y-%m-%dT%H:%M:%SZ')
         formatted_dt = dt.strftime('%d %B %Y - %I:%M %p UTC')
-
-        #Format: {author} pushed to {to_branch} on {timestamp}
-        #Sample: "Travis" pushed to "staging" on 1st April 2021 - 9:30 PM UTC
-        msg = f'{obj.pull_request.user.login} pushed to {obj.pull_request.head.repo.default_branch} on {formatted_dt}'
+        #Format: {author} submitted a pull request from {from_branch} to {to_branch} on {timestamp}
+        #Sample: "Travis" submitted a pull request from "staging" to "master" on 1st April 2021 - 9:00 AMUTC
+        msg = f'{obj.pull_request.user.login} submitted a pull request from "{obj.pull_request.head.ref}" to "{obj.pull_request.head.repo.default_branch}" on {formatted_dt}'
         mongo.db.demo.insert_one({'action':'pull_request','message':msg})
 
         return jsonify({'message': 'Info added successfully'}), 201
 
+    # Get all the recent event from the DB
     @app.route('/get_requests',methods=["GET"])
     def get_requests():
         try:

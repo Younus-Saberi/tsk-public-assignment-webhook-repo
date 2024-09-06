@@ -106,27 +106,23 @@
             const container = document.getElementById('recent-request');
             container.style.display = 'none';
 
-            fetch('http://127.0.0.1:5000/get_requests')
+            fetch('http://localhost:5000/get_requests')
                 .then(response => response.json())
                 .then(data => {
                     // Clear the current request display
                     container.innerHTML = '';
 
                     if (data.length > 0) {
-                        // Get the most recent request (first item in sorted list)
+                        // Get the most recent request
                         const recentRequest = data[0];
 
-                        // Format and display the recent request
+                        // Create a div for the request and format the message
                         const requestDiv = document.createElement('div');
                         requestDiv.classList.add('request');
 
                         requestDiv.innerHTML = `
-                            <h3>Request ID: ${recentRequest.request_id}</h3>
-                            <p>Author: ${recentRequest.author}</p>
-                            <p>Action: ${recentRequest.action}</p>
-                            <p>From Branch: ${recentRequest.from_branch}</p>
-                            <p>To Branch: ${recentRequest.to_branch}</p>
-                            <p>Timestamp: ${new Date(recentRequest.timestamp).toLocaleString()}</p>
+                            <h3>Action: ${recentRequest.action}</h3>
+                            <p>Message: ${recentRequest.message}</p>
                         `;
                         container.appendChild(requestDiv);
                     } else {
