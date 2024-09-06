@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recent Activity</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .request {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .request h3 {
+            margin: 0;
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        .request p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none; /* Initially hidden */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: 90%;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .request h3 {
+                font-size: 1em;
+            }
+
+            .request p {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Recent Activity</h1>
+        <div id="loader" class="loader"></div> <!-- Loader -->
+        <div id="recent-request">
+            <!-- The most recent request will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <script>
+        // Function to fetch the most recent request from the Flask backend
+        function fetchRecentRequest() {
+            // Show the loader
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
+
+            // Hide the current content while loading
+            const container = document.getElementById('recent-request');
+            container.style.display = 'none';
+
+            fetch('http://127.0.0.1:5000/get_requests')
+                .then(response => response.json())
+                .then(data => {
+                    // Clear the current request display
+                    container.innerHTML = '';
+
+                    if (data.length > 0) {
+                        // Get the most recent request (first item in sorted list)
+                        const recentRequest = data[0];
+
+                        // Format and display the recent request
+                        const requestDiv = document.createElement('div');
+                        requestDiv.classList.add('request');
+
+                        requestDiv.innerHTML = `
+                            <h3>Request ID: ${recentRequest.request_id}</h3>
+                            <p>Author: ${recentRequest.author}</p>
+                            <p>Action: ${recentRequest.action}</p>
+                            <p>From Branch: ${recentRequest.from_branch}</p>
+                            <p>To Branch: ${recentRequest.to_branch}</p>
+                            <p>Timestamp: ${new Date(recentRequest.timestamp).toLocaleString()}</p>
+                        `;
+                        container.appendChild(requestDiv);
+                    } else {
+                        container.innerHTML = '<p>No recent activity available.</p>';
+                    }
+
+                    // Hide the loader and show the content
+                    loader.style.display = 'none';
+                    container.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching recent request:', error);
+                    loader.style.display = 'none'; // Hide loader on error
+                });
+        }
+
+        // Fetch the most recent request every 15 seconds
+        setInterval(fetchRecentRequest, 15000);
+
+        // Initial fetch
+        fetchRecentRequest();
+    </script>
+
+</body>
+</html>
