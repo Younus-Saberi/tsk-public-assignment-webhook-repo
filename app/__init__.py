@@ -38,9 +38,11 @@ def create_app():
         data = request.get_json()
         obj = Box(data)
         # obj.pusher.name pushed to obj.repository.default_branch
-        mongo.db.demo.insert_one({'action':'push','message':obj})
+        dt = datetime.strptime(obj.repository.updated_at,'%Y-%m-%dT%H:%M:%SZ')
+        push_date = dt.strftime('%d %B %Y - %I:%M %p UTC')
 
-        print("YOUR PUSH ACTION DATA IS", obj)
+        push_msg = f'{obj.pusher.name} pushed to "{obj.repository.default_branch}" on {push_date}'
+        mongo.db.demo.insert_one({'action':'push','message':push_msg})
 
         return jsonify({'message':"push action recorded"}),201
 
